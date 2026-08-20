@@ -7,6 +7,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,7 +34,7 @@ class LedgerApiIntegrationTest {
         String toAccountId = createAccount(0);
 
         mockMvc.perform(post("/transfers")
-                        .header("Idempotency-Key", "test-key-1")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(
                                 new TransferRequest(fromAccountId, toAccountId, 400))))
@@ -52,14 +54,15 @@ class LedgerApiIntegrationTest {
         String fromAccountId = createAccount(1_000);
         String toAccountId = createAccount(0);
         TransferRequest request = new TransferRequest(fromAccountId, toAccountId, 400);
+        String idempotencyKey = UUID.randomUUID().toString();
 
         mockMvc.perform(post("/transfers")
-                        .header("Idempotency-Key", "test-key-2")
+                        .header("Idempotency-Key", idempotencyKey)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
         mockMvc.perform(post("/transfers")
-                        .header("Idempotency-Key", "test-key-2")
+                        .header("Idempotency-Key", idempotencyKey)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

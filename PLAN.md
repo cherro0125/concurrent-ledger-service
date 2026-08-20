@@ -58,9 +58,9 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 - Manual `curl` testing against a running instance caught a real bug the test suite didn't: `POST /accounts` with `{}` 400'd because Jackson can't bind a missing JSON field to a primitive `long`; fixed by making `CreateAccountRequest`'s field a boxed `Long`
 - Reworked core's input-validation `Objects.requireNonNull` calls (`AccountId`, `TransferService.transfer`, `IdempotentTransferService.transfer`) to throw `IllegalArgumentException` instead, keeping `Objects.requireNonNull` only for constructor/wiring invariants — so `ApiExceptionHandler` no longer catches `NullPointerException` at all, and a genuine future null-dereference bug surfaces as 500, not a misleading 400
 
-### 6. Unhappy-path and integration tests
-- Insufficient funds, non-existent account, self-transfer, zero/negative amount
-- Integration test (`@SpringBootTest`) covering the full flow through HTTP
+### 6. Unhappy-path and integration tests — done
+- Insufficient funds, non-existent account (both sides), self-transfer, zero/negative amount, missing idempotency header, idempotency key reused with different parameters, unknown-account balance lookup, negative initial balance — each proven at the actual HTTP boundary (status code, and message where it adds signal) in `LedgerApiErrorHandlingTest`, not just at the core level
+- `@SpringBootTest` reuses the same context (and so the same singleton in-memory store) across every test method across both API test classes; idempotency keys are generated per-call (`UUID.randomUUID()`) rather than hardcoded literals, so tests can't silently collide with each other
 
 ### 7. README
 - Single startup command, API guarantees, examples
