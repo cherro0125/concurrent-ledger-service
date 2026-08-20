@@ -43,10 +43,12 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 - Extra, beyond the original spec: a key reused with different transfer parameters is rejected (`IdempotencyKeyConflictException`) instead of silently replaying an unrelated result
 - Tested with a hand-written `AccountRepository` fake that blocks mid-lookup via a `CountDownLatch`, proving the wait-on-in-flight-original path deterministically, plus a simulated `Error` proving nothing can leak a permanently-stuck future
 
-### 4. Concurrency tests
-- **Test 1:** N threads × M random transfers across a shared pool of accounts → assert total balance sum unchanged, no negative balances
-- **Test 2:** idempotency race — two threads, same idempotency key, synchronized start via `CyclicBarrier` → exactly one execution
-- Verify thread count / account pool size actually forces contention (too few accounts = trivially catches bugs; too many = test proves nothing)
+### 4. Concurrency tests — done
+- **Test 1:** 32 threads × 2,000 transfers each (64,000 total) across a shared pool of 8 accounts, `CyclicBarrier`-synchronized start → assert total balance sum unchanged, no negative balances, and `InsufficientFunds` actually occurred (proof the run was contentious, not just parallel-but-disjoint)
+- **Test 2:** idempotency race — 16 threads, same idempotency key, synchronized start via `CyclicBarrier` → exactly one execution (verified via a lookup-counting fake, not just matching balances)
+- Verified thread count / account pool size actually forces contention: first pass used an initial balance too large relative to transfer size, so `InsufficientFunds` never actually triggered despite the test passing — retuned until it reliably does
+- `awaitTermination` with a bounded timeout doubles as deadlock detection: a broken lock ordering shows up as this test failing on a timeout, not hanging silently
+- Each thread guarantees a distinct `to` account by construction rather than skipping self-transfers, so the transfer count is exact, not approximate
 
 ### 5. HTTP layer
 - `POST /accounts`, `POST /transfers` (with `Idempotency-Key` header), `GET /accounts/{id}/balance`
