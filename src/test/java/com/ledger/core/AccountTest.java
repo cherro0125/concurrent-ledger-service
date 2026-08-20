@@ -59,20 +59,20 @@ class AccountTest {
     }
 
     private static boolean withLock(Account account, java.util.function.BooleanSupplier action) {
-        account.lock().lock();
+        account.mutex().lock();
         try {
             return action.getAsBoolean();
         } finally {
-            account.lock().unlock();
+            account.mutex().unlock();
         }
     }
 
     private static void withLock(Account account, Runnable action) {
-        account.lock().lock();
+        account.mutex().lock();
         try {
             action.run();
         } finally {
-            account.lock().unlock();
+            account.mutex().unlock();
         }
     }
 }

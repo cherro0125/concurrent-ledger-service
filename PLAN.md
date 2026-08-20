@@ -31,7 +31,7 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 - Sealed interface `TransferResult` with variants: `Success`, `InsufficientFunds`, `AccountNotFound`
 - **Review checklist:** `Money` rejects negative values; `Account` doesn't expose mutable state without going through the lock
 
-### 2. Core transfer logic
+### 2. Core transfer logic — done
 - Lock ordering by `accountId.compareTo()` to prevent deadlocks between concurrent opposite-direction transfers
 - Review for race conditions, deadlock risk, edge cases (self-transfer, double-locking same account)
 - This is the section to be able to defend line-by-line in a technical review

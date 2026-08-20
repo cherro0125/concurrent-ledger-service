@@ -1,12 +1,13 @@
 package com.ledger.core;
 
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Mutable account state. Every balance mutation must happen while holding
- * {@link #lock()}; {@link #balance()} acquires it internally for a
- * consistent read. The lock and mutators are package-private so only the
+ * {@link #mutex()}; {@link #balance()} acquires it internally for a
+ * consistent read. The mutex and mutators are package-private so only the
  * transfer logic in this package can coordinate locking across two
  * accounts (e.g. lock ordering by {@link AccountId} to avoid deadlocks).
  */
@@ -34,13 +35,19 @@ public final class Account {
         }
     }
 
-    ReentrantLock lock() {
+    /**
+     * The account's mutex. Returned as {@link Lock} rather than
+     * {@link ReentrantLock} so callers outside this class only see
+     * {@code lock()}/{@code unlock()} — reentrant-specific methods like
+     * {@code isHeldByCurrentThread()} stay internal to {@code Account}.
+     */
+    Lock mutex() {
         return lock;
     }
 
     /**
      * Debits {@code amount} if sufficient funds are available, returning
-     * whether it happened. Caller must hold {@link #lock()}.
+     * whether it happened. Caller must hold {@link #mutex()}.
      */
     boolean tryDebit(Money amount) {
         requireLockHeldByCurrentThread();
@@ -52,7 +59,7 @@ public final class Account {
     }
 
     /**
-     * Credits {@code amount} unconditionally. Caller must hold {@link #lock()}.
+     * Credits {@code amount} unconditionally. Caller must hold {@link #mutex()}.
      */
     void credit(Money amount) {
         requireLockHeldByCurrentThread();
