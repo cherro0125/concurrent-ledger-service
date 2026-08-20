@@ -36,11 +36,12 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 - Review for race conditions, deadlock risk, edge cases (self-transfer, double-locking same account)
 - This is the section to be able to defend line-by-line in a technical review
 
-### 3. Idempotency mechanism
-- `ConcurrentHashMap<String, CompletableFuture<TransferResult>>` + `computeIfAbsent`
+### 3. Idempotency mechanism — done
+- `ConcurrentHashMap<String, CompletableFuture<TransferResult>>` keyed by idempotency key, claimed via `putIfAbsent` (not `computeIfAbsent` — the real transfer work, and the eviction-on-failure, both need to happen outside the map's remapping function, which `ConcurrentHashMap`'s Javadoc requires to be quick and not touch the map itself)
 - First request claims the key and executes; a concurrent retry with the same key gets the same `Future` and waits on it
-- Critical: exception handling — a failed original request must not leave the retry waiting forever
-- Manually test: fire two concurrent requests with the same key, force an exception in the first, confirm the second doesn't hang
+- A failed original (exception *or* error) evicts the key so a later retry gets a fresh attempt instead of hanging or permanently replaying a transient failure; a business outcome (success, insufficient funds, account not found) is cached forever
+- Extra, beyond the original spec: a key reused with different transfer parameters is rejected (`IdempotencyKeyConflictException`) instead of silently replaying an unrelated result
+- Tested with a hand-written `AccountRepository` fake that blocks mid-lookup via a `CountDownLatch`, proving the wait-on-in-flight-original path deterministically, plus a simulated `Error` proving nothing can leak a permanently-stuck future
 
 ### 4. Concurrency tests
 - **Test 1:** N threads × M random transfers across a shared pool of accounts → assert total balance sum unchanged, no negative balances
