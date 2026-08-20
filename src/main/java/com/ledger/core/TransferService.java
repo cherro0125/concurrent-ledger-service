@@ -18,9 +18,15 @@ public final class TransferService {
     }
 
     public TransferResult transfer(AccountId fromId, AccountId toId, Money amount) {
-        Objects.requireNonNull(fromId, "fromId must not be null");
-        Objects.requireNonNull(toId, "toId must not be null");
-        Objects.requireNonNull(amount, "amount must not be null");
+        if (fromId == null) {
+            throw new IllegalArgumentException("fromId must not be null");
+        }
+        if (toId == null) {
+            throw new IllegalArgumentException("toId must not be null");
+        }
+        if (amount == null) {
+            throw new IllegalArgumentException("amount must not be null");
+        }
         if (fromId.equals(toId)) {
             throw new IllegalArgumentException("Cannot transfer to the same account: " + fromId);
         }

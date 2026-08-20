@@ -10,7 +10,7 @@ class AccountIdTest {
     @Test
     void rejectsNullValue() {
         assertThatThrownBy(() -> new AccountId(null))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

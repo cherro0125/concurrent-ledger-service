@@ -50,9 +50,13 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 - `awaitTermination` with a bounded timeout doubles as deadlock detection: a broken lock ordering shows up as this test failing on a timeout, not hanging silently
 - Each thread guarantees a distinct `to` account by construction rather than skipping self-transfers, so the transfer count is exact, not approximate
 
-### 5. HTTP layer
+### 5. HTTP layer — done
 - `POST /accounts`, `POST /transfers` (with `Idempotency-Key` header), `GET /accounts/{id}/balance`
-- Map `TransferResult` to HTTP status: Success → 200, InsufficientFunds → 409, AccountNotFound → 404, invalid input → 400
+- Map `TransferResult` to HTTP status via an exhaustive `switch` (Success → 200, InsufficientFunds → 409, AccountNotFound → 404); `IllegalArgumentException` → 400; `IdempotencyKeyConflictException` → 409
+- `LedgerConfiguration` is the one place Spring wiring touches the plain-Java core (`@Bean` methods only, no annotations on `core`/`store`)
+- Spring Boot 4 ships Jackson 3, whose base package moved to `tools.jackson.databind` (and `AutoConfigureMockMvc` moved under `org.springframework.boot.webmvc.test.autoconfigure`) — found by letting the compiler fail and inspecting the actual jars, since this is undocumented for a brand-new major version
+- Manual `curl` testing against a running instance caught a real bug the test suite didn't: `POST /accounts` with `{}` 400'd because Jackson can't bind a missing JSON field to a primitive `long`; fixed by making `CreateAccountRequest`'s field a boxed `Long`
+- Reworked core's input-validation `Objects.requireNonNull` calls (`AccountId`, `TransferService.transfer`, `IdempotentTransferService.transfer`) to throw `IllegalArgumentException` instead, keeping `Objects.requireNonNull` only for constructor/wiring invariants — so `ApiExceptionHandler` no longer catches `NullPointerException` at all, and a genuine future null-dereference bug surfaces as 500, not a misleading 400
 
 ### 6. Unhappy-path and integration tests
 - Insufficient funds, non-existent account, self-transfer, zero/negative amount

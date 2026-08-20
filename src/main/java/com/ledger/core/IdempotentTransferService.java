@@ -45,7 +45,9 @@ public final class IdempotentTransferService {
     }
 
     public TransferResult transfer(String idempotencyKey, AccountId fromId, AccountId toId, Money amount) {
-        Objects.requireNonNull(idempotencyKey, "idempotencyKey must not be null");
+        if (idempotencyKey == null) {
+            throw new IllegalArgumentException("idempotencyKey must not be null");
+        }
         if (idempotencyKey.isBlank()) {
             throw new IllegalArgumentException("idempotencyKey must not be blank");
         }

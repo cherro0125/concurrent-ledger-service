@@ -194,7 +194,7 @@ class IdempotentTransferServiceTest {
         IdempotentTransferService service = new IdempotentTransferService(new TransferService(repository));
 
         assertThatThrownBy(() -> service.transfer(null, from.id(), to.id(), Money.ofMinorUnits(10)))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
