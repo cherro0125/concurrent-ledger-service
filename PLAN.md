@@ -22,8 +22,8 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 
 ## Tasks
 
-### 0. Project setup
-- Gradle project + wrapper, Java 21, `spring-boot-starter-web`, JUnit 5 + AssertJ
+### 0. Project setup — done
+- Gradle project + wrapper, Java 21, `spring-boot-starter-webmvc`, JUnit 5 + AssertJ
 - Package structure: `core`, `store`, `api`
 
 ### 1. Domain model

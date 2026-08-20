@@ -4,7 +4,7 @@
 |---|---|
 | Language | Java 21 |
 | Build tool | Gradle + wrapper (`./gradlew`) |
-| HTTP | Spring Boot — `spring-boot-starter-web` only |
+| HTTP | Spring Boot 4 — `spring-boot-starter-webmvc` only (Boot 4's rename of `spring-boot-starter-web`) |
 | Concurrency | `java.util.concurrent` (`ReentrantLock`, `ConcurrentHashMap`, `CompletableFuture`, `ExecutorService`, `CyclicBarrier`) |
 | Testing | JUnit 5 + AssertJ |
 
