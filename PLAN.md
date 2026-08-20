@@ -26,7 +26,7 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 - Gradle project + wrapper, Java 21, `spring-boot-starter-webmvc`, JUnit 5 + AssertJ
 - Package structure: `core`, `store`, `api`
 
-### 1. Domain model
+### 1. Domain model — done
 - `AccountId`, `Money` (long in minor units, validated ≥ 0), `Account` (holds its own `ReentrantLock`)
 - Sealed interface `TransferResult` with variants: `Success`, `InsufficientFunds`, `AccountNotFound`
 - **Review checklist:** `Money` rejects negative values; `Account` doesn't expose mutable state without going through the lock
