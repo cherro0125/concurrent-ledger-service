@@ -62,9 +62,9 @@ See [TECH_STACK.md](./TECH_STACK.md) for the stack and the explicitly-prohibited
 - Insufficient funds, non-existent account (both sides), self-transfer, zero/negative amount, missing idempotency header, idempotency key reused with different parameters, unknown-account balance lookup, negative initial balance — each proven at the actual HTTP boundary (status code, and message where it adds signal) in `LedgerApiErrorHandlingTest`, not just at the core level
 - `@SpringBootTest` reuses the same context (and so the same singleton in-memory store) across every test method across both API test classes; idempotency keys are generated per-call (`UUID.randomUUID()`) rather than hardcoded literals, so tests can't silently collide with each other
 
-### 7. README
-- Single startup command, API guarantees, examples
-- Trade-offs section: no persistence (by requirement), no TTL on idempotency keys (would need cleanup in production), simplified ledger model without full transaction history
+### 7. README — done
+- Single startup command (`./gradlew bootRun`, verified live), API guarantees, endpoint reference, curl example verified against a real running instance on the exact port/paths documented
+- Trade-offs section covers: no persistence, no idempotency-key TTL, simplified ledger model (no transaction history), non-fair locks, blocking (not reactive) concurrency model, the not-in-spec optional initial balance on account creation, and `long` minor units over `BigDecimal`
 
 ### 8. Final review
 - Read through the entire `core` package line by line
